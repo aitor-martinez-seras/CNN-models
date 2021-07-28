@@ -18,12 +18,7 @@ from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 
 
-# Data preparation
-download_and_extract_data()
-x_train, _, y_train= load_training_data()
-x_test, _, y_test = load_test_data()
-input_shape = list(x_train.shape[1:])
-classes = y_train.shape[1]
+
 
 
 # ResNet building block of two layers
@@ -93,30 +88,38 @@ def create_model(input_shape, classes, name):
 
     return model
 
-
 # Define optimizer and compile model
-optimizer = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-ResNet32 = create_model(input_shape=input_shape, classes=classes, name='ResNet32')
-ResNet32.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics = ['accuracy'])
+    optimizer = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    ResNet32 = create_model(input_shape=input_shape, classes=classes, name='ResNet32')
+    ResNet32.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics = ['accuracy'])
+    
+if __name__ == '__main__':
+    
+
+    # Data preparation
+    download_and_extract_data()
+    x_train, _, y_train= load_training_data()
+    x_test, _, y_test = load_test_data()
+    input_shape = list(x_train.shape[1:])
+    classes = y_train.shape[1]
+
+    # Generator for data augmantation
+    datagen = ImageDataGenerator(
+            rotation_range=30,  # randomly rotate images in the range (degrees, 0 to 180)
+            width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
+            height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
+            horizontal_flip=True)  # randomly flip images
 
 
-# Generator for data augmantation
-datagen = ImageDataGenerator(
-        rotation_range=30,  # randomly rotate images in the range (degrees, 0 to 180)
-        width_shift_range=0.1,  # randomly shift images horizontally (fraction of total width)
-        height_shift_range=0.1,  # randomly shift images vertically (fraction of total height)
-        horizontal_flip=True)  # randomly flip images
+    # Train model
+    results = ResNet32.fit_generator(datagen.flow(x_train, y_train,
+                                     batch_size = 250),
+                                     epochs = 100,
+                                     steps_per_epoch=200,  # data_size/batch size
+                                     validation_data=(x_test, y_test))
 
-
-# Train model
-results = ResNet32.fit_generator(datagen.flow(x_train, y_train,
-                                 batch_size = 250),
-                                 epochs = 100,
-                                 steps_per_epoch=200,  # data_size/batch size
-                                 validation_data=(x_test, y_test))
-
-# Plot train / validation results
-plot_results(results)
+    # Plot train / validation results
+    plot_results(results)
 
 # Print model architecture
 ResNet32.summary()
