@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # Plot train / validation results
     plot_results(results)
 
-# Print model architecture
-ResNet32.summary()
+    # Print model architecture
+    ResNet32.summary()
 
 
