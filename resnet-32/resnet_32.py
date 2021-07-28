@@ -18,7 +18,8 @@ from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 
 
-
+input_shape = [32,32,3]
+classes = 10
 
 
 # ResNet building block of two layers
